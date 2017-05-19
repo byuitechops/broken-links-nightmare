@@ -31,7 +31,10 @@ function startNightmare(nightmare) {
 startNightmare(nightmare)
 //4. When it no longer exists, scrape the page of info
 var urlPrefix = 'https://brightspace.com/d2l/home/';
+var href = ; //href attribute
 var links = [];
+
+var singleLink = urlPrefix + href;
 
 function scrapePage(nightmare) {
     nightmare
@@ -39,7 +42,7 @@ function scrapePage(nightmare) {
             var link = urlPrefix + href;
             links.push({
                 //take the urlPrefix,
-
+                singleLink('d2l-textblock')
             })
 
             //add every d2l-textblock element in the Links column after it individually
