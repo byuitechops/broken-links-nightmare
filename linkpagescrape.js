@@ -12,24 +12,31 @@ nightmare
     .wait(3000)
     .goto('https://byui.brightspace.com/d2l/brokenLinks/6606')
     //2. Wait 
-    .wait(5000)
+    .wait(1000)
     //3. If the selector button exists, click it
-    .exists('.vui-button.d2l-button.d2l-loadmore-pager')
-    .click('.vui-button.d2l-button.d2l-loadmore-pager')
+    .evaluate(function () {
+        function clickLoad() {
+            if ($('.d2l-loadmore-pager:visible').length) {
+                $('.d2l-loadmore-pager').click()
+                setTimeout(clickLoad, 500)
+            }
+        }
+        clickLoad()
+    })
     //4. When it no longer exists, scrape the page of links 
-    .then(console.log('hello'))
-    .catch(console.log);
-/*
-    .evaluate(function ('#d2l-grid-footer-wrapper a') {
+    .evaluate(function ('.d2l-loadmore-pager') {
         return document.querySelector(selector).innerText;
     }, selector)
 
     //5. and download it to a CSV
     .then(console.log)
 contents.savePage('fullPath', 'saveType', callback) {
-    if (error) {
-        console.log('There was an error')
-    } else if (!error) {
-        console.log('Saved page successfully, find your file at: ', fullPath)
+        if (error) {
+            console.log('There was an error')
+        } else if (!error) {
+            console.log('Saved page successfully, find your file at: ', fullPath)
+        }
     }
-}*/
+    //5. Do the things
+    .then(console.log)
+    .catch(console.log);
