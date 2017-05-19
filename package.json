@@ -1,12 +1,15 @@
 {
-    "name": "broken-links-nightmare",
-    "version": "1.0.0",
-    "description": "Code that will load all broken links and scrape the page",
-    "main": "./linkpagescrape.js",
-    "scripts": "./credentials.js",
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/byuitechops/broken-links-nightmare"
-    },
-    "author": "Ashley Stewart"
+  "name": "broken-links",
+  "version": "1.0.0",
+  "description": "",
+  "main": "credentials.js",
+  "dependencies": {
+    "nightmare": "^2.10.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
 }
