@@ -1,5 +1,5 @@
 var Nightmare = require('nightmare');
-var nightmare = Nightmare({
+var nightmare = new Nightmare({
     show: true
 });
 var creds = require('./credentials.js')
@@ -18,7 +18,7 @@ nightmare
     .click('.vui-button.d2l-button.d2l-loadmore-pager')
     //4. When it no longer exists, scrape the page of links 
     .then(console.log('hello'))
-    .catch(console.log)
+    .catch(console.log);
 /*
     .evaluate(function ('#d2l-grid-footer-wrapper a') {
         return document.querySelector(selector).innerText;

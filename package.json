@@ -3,7 +3,9 @@
     'version': '1.0.0',
     'description': 'Code that will load all broken links and scrape the page',
     'main': './linkpagescrape.js',
-    'scripts': './credentials.js',
+    'scripts': {
+        'test': 'NA',
+    },
 
 
     'repository': {
@@ -12,3 +14,4 @@
     },
     'author': 'Ashley Stewart'
 }
+//code cannot be run without the ./credentials.js file, contains an object holding the username and password, then pulled the object into the linkpagecrape.js file
