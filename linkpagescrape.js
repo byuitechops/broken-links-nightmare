@@ -54,6 +54,7 @@ function scrapePage(nightmare) {
             //take a fileName and save the csv there
             fileName = '';
             /*I need to pass something into the dsv module. I'm not sure what.*/
+            //It hasn't liked any of my variables so far.
             var brokenLinks = (dsv.csvFormat());
             fs.writeFileSync(fileName, brokenLinks);
             console.log('Your file has been saved as ' + fileName);
