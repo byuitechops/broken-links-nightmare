@@ -18,14 +18,19 @@ function startNightmare(nightmare) {
         //2. Wait for page to load
         .wait(1000)
         //3. If the selector button called "Load more" exists, click it
-        .evaluate(function () {
+        .evaluate(function (callback) {
             function clickLoad() {
                 if ($('.d2l-loadmore-pager:visible').length) {
                     $('.d2l-loadmore-pager').click()
                     setTimeout(clickLoad, 500)
+                } else {
+                    callback();
                 }
             }
             clickLoad()
+        })
+        .then(function () {
+            scrapePage(nightmare)
         })
 }
 startNightmare(nightmare);
@@ -37,37 +42,36 @@ function scrapePage(nightmare) {
             //create an array to store all the things
             var getItAll = [];
             //go through each individual thing and push it to the array
-            var entire = document.querySelectorAll('.vui-table tbody tr')
-            for (var i = 0; i < entire; i++) {
+            var entire = $('.vui-table tbody tr').get();
+            for (var i = 0; i < entire.length; i++) {
+                var row = $(entire[i]).children().get();
 
-                return document.querySelector('d2l-textblock').innerHTML;
-                getItAll.push('d2l-textblock');
+                getItAll.push({
+                    'Linked From': $(row[1]).text().trim(),
+                    'Clicks': $(row[2]).text().trim(),
+                    'Target URL': $(row[3]).text().trim(),
+                    'Latest Click': $(row[4]).text().trim()
+                });
 
             }
+
+
+            return getItAll;
         }, 'd2l-textblock')
         //6. Save everything to a CSV
-        .then(function () {
-
+        .then(function (getItAll) {
+            console.log(getItAll);
             //run the program at the beginning
             console.log('patience...');
 
             //take a fileName and save the csv there
-            fileName = '';
-            /*I need to pass something into the dsv module. I'm not sure what.*/
-            //It hasn't liked any of my variables so far.
-            var brokenLinks = (dsv.csvFormat());
+            var fileName = 'brokenLinks.csv';
+            var brokenLinks = (dsv.csvFormat(getItAll, ['Linked From', 'Clicks', 'Target URL', 'Latest Click']));
             fs.writeFileSync(fileName, brokenLinks);
             console.log('Your file has been saved as ' + fileName);
 
-
+            return nightmare.end();
         }).catch(function (Error) {
             console.log('The error was: ', Error);
         })
 }
-scrapePage(nightmare);
-
-function complete(nightmare) {
-    nightmare
-        .end();
-}
-complete(nightmare);
