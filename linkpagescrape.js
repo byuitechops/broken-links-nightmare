@@ -5,7 +5,7 @@ var nightmare = new Nightmare({
 var dsv = require('d3-dsv')
 var fs = require('fs')
 
-var creds = require('./credentials.js')
+var creds = JSON.parse(fs.readFileSync('./credentials.js', 'utf-8'))
 //1. Go to the page with all the links. Sign in with 'cct_maeashley' acct, use the url to navigate to link page.
 function startNightmare(nightmare) {
     nightmare
