@@ -4,15 +4,26 @@ var nightmare = new Nightmare({
 });
 var dsv = require('d3-dsv')
 var fs = require('fs')
+var prompt = require('prompt')
+var credentials = [
+    {
+        name: 'username',
+        message: 'Please enter your username'
+    },
+    {
+        name: 'password',
+        message: 'Please enter your password'
+    }
+                 ];
 
-var creds = JSON.parse(fs.readFileSync('./credentials.js', 'utf-8'))
 //1. Go to the page with all the links. Sign in with 'cct_maeashley' acct, use the url to navigate to link page.
 function startNightmare(nightmare) {
     nightmare
+        .viewport(1200, 900)
         .goto('https://byui.brightspace.com/d2l/login?noredirect=true')
-        //this is where I need to prompt the user for their own credentials
-        .type('#userName', creds.username)
-        .type('#password', creds.password)
+        //this is where I need to prompt the user for their own creds
+        .type('#userName', promptInfo.username)
+        .type('#password', promptInfo.password)
         .click('.d2l-button')
         .wait(3000)
         .goto('https://byui.brightspace.com/d2l/brokenLinks/6606')
@@ -37,7 +48,6 @@ function startNightmare(nightmare) {
             scrapePage(nightmare)
         })
 }
-startNightmare(nightmare);
 //4. When it no longer exists, scrape the page of info
 //take the table from the page and store it in an array
 function scrapePage(nightmare) {
@@ -64,9 +74,7 @@ function scrapePage(nightmare) {
                     var broken = '.d2l-grid-cell .d2l-textblock:even';
 
                     function addBaseURL(getItAll, baseURL, broken) {
-                        getItAll.forEach(function callback(baseURL, broken) {
-                            var link = baseURL + broken;
-                        }[, getItAll]);
+                        //still working on this logic, probably something like a .map>.reduce
                     }
                     for ('.vui-table tbody tr' in getItAll) {
                         if ('.vui-table tbody tr'.innerHTML like '*Online.2017*') {
@@ -123,8 +131,19 @@ function scrapePage(nightmare) {
         })
 
     //create a function that retrieves username and password from the user
-    promptInfo = {
-        username: result.username,
-        password: result.password
-    }
+    prompt.start();
+
+    prompt.get(credentials, function (err, result) {
+        if (err) {
+            console.log(err);
+        }
+
+        promptInfo = {
+            username: result.username,
+            password: result.password
+        }
+        console.log('Thanks, checking credentials...')
+        startNightmare(nightmare)
+
+    });
 }
