@@ -8,13 +8,15 @@ var prompt = require('prompt')
 var credentials = [
     {
         name: 'username',
-        message: 'Please enter your username'
+        description: 'Please enter your username'
     },
     {
         name: 'password',
-        message: 'Please enter your password'
+        description: 'Please enter your password',
+        hidden: true,
+        replace: '*'
     }
-                 ];
+];
 
 //1. Go to the page with all the links. Sign in with 'cct_maeashley' acct, use the url to navigate to link page.
 function startNightmare(nightmare) {
@@ -70,27 +72,28 @@ function scrapePage(nightmare) {
                     'Latest Click': $(row[4]).text().trim()
 
                     //add the base URL to the beginning of all the items in the list
-                    var baseURL = 'https://byui.brightspace.com';
-                    var broken = '.d2l-grid-cell .d2l-textblock:even';
+                    /*var baseURL = 'https://byui.brightspace.com';
+var broken = '.d2l-grid-cell .d2l-textblock:even';
 
-                    function addBaseURL(getItAll, baseURL, broken) {
-                        //still working on this logic, probably something like a .map>.reduce
-                    }
-                    for ('.vui-table tbody tr' in getItAll) {
-                        if ('.vui-table tbody tr'.innerHTML like '*Online.2017*') {
-                            //sort into online csv
-                        } else if ('.vui-table tbody tr'.innerHTML like '*campus.*') {
-                            //sort into campus CSV
-                        } else if ('.vui-table tbody tr'.innerHTML like '*.reference*') {
-                            //sort into reference csv
-                        } else {
-                            //sort into other csv
-                        }
-                    }
+function addBaseURL(getItAll, baseURL, broken) {
+    getItAll.map();
+    getItAll.reduce();
+    //still working on this logic, probably something like a .map>.reduce
+}
+for ('.vui-table tbody tr' in getItAll) {
+    if ('.vui-table tbody tr'.innerHTML like '*Online.2017*') {
+        //sort into online csv
+    } else if ('.vui-table tbody tr'.innerHTML like '*campus.*') {
+        //sort into campus CSV
+    } else if ('.vui-table tbody tr'.innerHTML like '*.reference*') {
+        //sort into reference csv
+    } else {
+        //sort into other csv
+    }
+}*/
                 });
 
             }
-
 
             return getItAll;
         }, 'd2l-textblock')
@@ -108,42 +111,27 @@ function scrapePage(nightmare) {
             fs.writeFileSync(fileName, brokenLinks);
             console.log('Your file has been saved as ' + fileName);
 
-            //sorted data will be saved according to its category
-
-            /*var fileName = 'brokenLinks-campus.csv';
-            var brokenLinks = (dsv.csvFormat(getItAll, ['Linked From', 'Clicks', 'Target URL', 'Latest Click']));
-            fs.writeFileSync(fileName, brokenLinks);
-            console.log('Your file has been saved as ' + fileName);*/
-
-            /*var fileName = 'brokenLinks-reference.csv';
-            var brokenLinks = (dsv.csvFormat(getItAll, ['Linked From', 'Clicks', 'Target URL', 'Latest Click']));
-            fs.writeFileSync(fileName, brokenLinks);
-            console.log('Your file has been saved as ' + fileName);*/
-
-            /*var fileName = 'brokenLinks-unknown.csv';
-            var brokenLinks = (dsv.csvFormat(getItAll, ['Linked From', 'Clicks', 'Target URL', 'Latest Click']));
-            fs.writeFileSync(fileName, brokenLinks);
-            console.log('Your file has been saved as ' + fileName);*/
+            //sorted data should be saved according to its category
 
             return nightmare.end();
         }).catch(function (Error) {
             console.log('The error was: ', Error);
         })
 
-    //create a function that retrieves username and password from the user
-    prompt.start();
-
-    prompt.get(credentials, function (err, result) {
-        if (err) {
-            console.log(err);
-        }
-
-        promptInfo = {
-            username: result.username,
-            password: result.password
-        }
-        console.log('Thanks, checking credentials...')
-        startNightmare(nightmare)
-
-    });
 }
+//retrieve username and password from the user
+prompt.start();
+
+prompt.get(credentials, function (err, result) {
+    if (err) {
+        console.log(err);
+    }
+
+    promptInfo = {
+        username: result.username,
+        password: result.password
+    }
+    console.log('Thanks, checking credentials...')
+    startNightmare(nightmare)
+
+});
