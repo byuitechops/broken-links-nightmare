@@ -18,7 +18,7 @@ var credentials = [
     },
     {
         name: 'startDate',
-        description: 'Type a beginning date for the date range using the format "m/d/yyyy"'
+        description: 'Type a start date for the date range using the format "m/d/yyyy"'
     },
     {
         name: 'endDate',
@@ -161,6 +161,17 @@ prompt.get(credentials, function (err, result) {
     dateInfo = {
         startDate: result.startDate,
         endDate: result.endDate
+    }
+    if (result.endDate == "") {
+        var today = new Date();
+        var day = today.getDate();
+        var month = today.getMonth() + 1;
+        var year = today.getFullYear();
+
+
+        var defaultDate = month + '/' + day + '/' + year;
+        result.endDate = today;
+
     }
     console.log('Thanks, checking credentials...')
     startNightmare(nightmare)
