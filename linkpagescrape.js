@@ -5,6 +5,7 @@ var nightmare = new Nightmare({
 var dsv = require('d3-dsv')
 var fs = require('fs')
 var prompt = require('prompt')
+
 var credentials = [
     {
         name: 'username',
@@ -23,24 +24,28 @@ var credentials = [
     {
         name: 'endDate',
         description: 'Type an end date for the date range using the format "m/d/yyyy"'
+    },
+    {
+        name: 'correctDate',
+        description: "You're sure the values you typed are correct? Y/N: "
     }
 ];
 
-//1. Go to the page with all the links. Sign in use the url to navigate to link page.
+//Go to the page with all the links. Sign in with user's creds and use the url to navigate to page with broken links.
 function startNightmare(nightmare) {
     nightmare
         .viewport(1200, 900)
         .goto('https://byui.brightspace.com/d2l/login?noredirect=true')
-        //this is where I need to prompt the user for their own creds
+        //prompt the user for their own credentials
         .type('#userName', promptInfo.username)
         .type('#password', promptInfo.password)
         .click('.d2l-button')
         .wait(3000)
         .goto('https://byui.brightspace.com/d2l/brokenLinks/6606')
-        //2. Wait for page to load
+        //Wait for page to load
         .wait(1000)
 
-        //make the date ranges available (may need to prompt the user for input values)
+
         /* .select('div.d2l-select-container select.vui-input.d2l-select option:nth-child(3)', '2')*/
         .evaluate(function () {
 
@@ -48,6 +53,7 @@ function startNightmare(nightmare) {
             D2L.O("__g1", 47)();
         })
         .wait(1000)
+        //take the input from the user and type it into a custom date range.
         .evaluate(function (dateInfo) {
             document.getElementById('startDate').value = dateInfo.startDate;
             document.getElementById('endDate').value = dateInfo.endDate;
@@ -56,7 +62,7 @@ function startNightmare(nightmare) {
         .type('#endDate', ' ')
         .wait(2000)
         .click('#optionsForm div:nth-of-type(1) > a')
-        //3. If the selector button called "Load more" exists, click it
+        //If the selector button called "Load more" exists, click it
         .evaluate(function (callback) {
             function clickLoad() {
                 if ($('.d2l-loadmore-pager:visible').length) {
@@ -72,7 +78,7 @@ function startNightmare(nightmare) {
             scrapePage(nightmare)
         })
 }
-//4. When it no longer exists, scrape the page of info
+//When it no longer exists, scrape the page of info
 //take the table from the page and store it in an array
 function scrapePage(nightmare) {
     nightmare
@@ -80,52 +86,52 @@ function scrapePage(nightmare) {
             //create an array to store all the things
             var getItAll = [];
 
-            //send an array of objects to SORT the data and decide the category of the information: Online, campus, reference, or other
-
             //then scrape the information and push all of the objects to the array
             var entire = $('.vui-table tbody tr').get();
             for (var i = 0; i < entire.length; i++) {
                 var row = $(entire[i]).children().get();
+                //add the base URL to the beginning of all the items in the list
+                var baseURL = 'https://byui.brightspace.com';
 
                 getItAll.push({
                     'Linked From': $(row[1]).text().trim(),
                     'Clicks': $(row[2]).text().trim(),
                     'Target URL': $(row[3]).text().trim(),
                     'Latest Click': $(row[4]).text().trim()
-
-                    //add the base URL to the beginning of all the items in the list
-                    /*var baseURL = 'https://byui.brightspace.com';
-var broken = '.d2l-grid-cell .d2l-textblock:even';
-
-function addBaseURL(getItAll, baseURL, broken) {
-    getItAll.map();
-    getItAll.reduce();
-    //still working on this logic, probably something like a .map>.reduce
-}
-for ('.vui-table tbody tr' in getItAll) {
-    if ('.vui-table tbody tr'.innerHTML like '*Online.2017*') {
-        //sort into online csv
-    } else if ('.vui-table tbody tr'.innerHTML like '*campus.*') {
-        //sort into campus CSV
-    } else if ('.vui-table tbody tr'.innerHTML like '*.reference*') {
-        //sort into reference csv
-    } else {
-        //sort into other csv
-    }
-}*/
                 });
 
-            }
 
-            return getItAll;
+                /*
+
+            //send an array of objects to SORT the data and decide the category of the information: Online, campus, reference, or other
+function sort() {
+    //things in here should be able to access getItAll, but getItAll is empty.
+
+    if (like '*Online.2017*') {
+        //send it to a function that only prints online csv
+    } else if (like '*campus.*') {
+        //send to a function that will save it as its own CSV
+    } else if (like '*.reference*') {
+        //send to a function that will save it as its own CSV
+    } else {
+        //send to a function that will save it as its own CSV
+    }
+
+}*/
+            }
+            var everything = getItAll.map(function (currentObject) {
+
+                currentObject["Linked From"] = baseURL + currentObject["Linked From"];
+                currentObject["Target URL"] = baseURL + currentObject["Target URL"];
+                return currentObject;
+            })
+            //return getItAll;
+            return everything;
         }, 'd2l-textblock')
-        //6. Save everything to a CSV
+        //Save everything to a CSV
 
 
         .then(function (getItAll) {
-            console.log(getItAll);
-            //run the program at the beginning
-            console.log('patience...');
 
             //take a fileName and save the csv there
             var fileName = 'brokenLinks-online.csv';
@@ -133,7 +139,7 @@ for ('.vui-table tbody tr' in getItAll) {
             fs.writeFileSync(fileName, brokenLinks);
             console.log('Your file has been saved as ' + fileName);
 
-            //sorted data should be saved according to its category
+            //sorted data should be saved according to its category(online, campous, reference or other)
 
             return nightmare.end();
         }).catch(function (Error) {
@@ -160,7 +166,8 @@ prompt.get(credentials, function (err, result) {
     }
     dateInfo = {
         startDate: result.startDate,
-        endDate: result.endDate
+        endDate: result.endDate,
+        correctDate: result.correctDate
     }
     if (result.endDate == "") {
         var today = new Date();
@@ -173,7 +180,12 @@ prompt.get(credentials, function (err, result) {
         result.endDate = today;
 
     }
-    console.log('Thanks, checking credentials...')
-    startNightmare(nightmare)
+    //if they look back and realize the date is incorrect, exit the program, else continue
+    if (result.correctDate == 'N') {
+        return;
+    } else {
+        console.log('Thanks, checking credentials...')
+        startNightmare(nightmare)
+    }
 
 });
