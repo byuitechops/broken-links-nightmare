@@ -1,16 +1,17 @@
 {
-    "name": "d2l-broken-links",
-    "version": "1.0.0",
-    "description": "",
-    "main": "linkpagescrape.js",
-    "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1"
-    },
-    "author": "Ashley Stewart",
-    "license": "MIT",
-    "dependencies": {
-        "d3-dsv": "^1.0.5",
-        "nightmare": "^2.10.0"
-        "prompt": "^1.0.0"
-    }
+  "name": "broken-links-nightmare",
+  "version": "1.0.0",
+  "description": "",
+  "main": "linkpagescrape.js",
+  "dependencies": {
+    "d3-dsv": "^1.0.5",
+    "nightmare": "^2.10.0",
+    "prompt": "^1.0.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Ashley Stewart",
+  "license": "ISC"
 }
