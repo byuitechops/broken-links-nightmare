@@ -107,7 +107,7 @@ function scrapePage(nightmare) {
                 return currentObject;
             })
             //send an array of empty objects to SORT the data and decide the category of the data: Online, campus, reference, or other
-            everything.reduce(function (total, currentObject), [{}, {}, {}, {}]) {
+           /* everything.reduce(function (total, currentObject), [{}, {}, {}, {}]) {
                 //instead of accessing getItAll, access everything otherwise you'll get the raw data instead of the manipulated data.
 
                 if (currentObject["Linked From"] like '*Online.2017*') {
@@ -119,7 +119,7 @@ function scrapePage(nightmare) {
                 } else {
                     //put it in the fourth object and send to a function that will save it as its own CSV
                 }
-            }
+            }*/
             return everything;
         }, 'd2l-textblock')
         //Save everything to a CSV
