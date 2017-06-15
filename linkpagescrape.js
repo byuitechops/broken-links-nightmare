@@ -99,25 +99,6 @@ function scrapePage(nightmare) {
                     'Target URL': $(row[3]).text().trim(),
                     'Latest Click': $(row[4]).text().trim()
                 });
-
-
-                /*
-
-            //send an array of objects to SORT the data and decide the category of the information: Online, campus, reference, or other
-function sort() {
-    //things in here should be able to access getItAll, but getItAll is empty.
-
-    if (like '*Online.2017*') {
-        //send it to a function that only prints online csv
-    } else if (like '*campus.*') {
-        //send to a function that will save it as its own CSV
-    } else if (like '*.reference*') {
-        //send to a function that will save it as its own CSV
-    } else {
-        //send to a function that will save it as its own CSV
-    }
-
-}*/
             }
             var everything = getItAll.map(function (currentObject) {
 
@@ -125,7 +106,20 @@ function sort() {
                 currentObject["Target URL"] = baseURL + currentObject["Target URL"];
                 return currentObject;
             })
-            //return getItAll;
+            //send an array of empty objects to SORT the data and decide the category of the data: Online, campus, reference, or other
+            everything.reduce(function (total, currentObject), [{}, {}, {}, {}]) {
+                //instead of accessing getItAll, access everything otherwise you'll get the raw data instead of the manipulated data.
+
+                if (currentObject["Linked From"] like '*Online.2017*') {
+                    //put it in the first object and send it to a function that only prints online csv
+                } else if (currentObject["Linked From"] like '*campus.*') {
+                    //put it in the second object and send to a function that will save it as its own CSV
+                } else if (currentObject["Linked From"] like '*.reference*') {
+                    //put it in the third object and send to a function that will save it as its own CSV
+                } else {
+                    //put it in the fourth object and send to a function that will save it as its own CSV
+                }
+            }
             return everything;
         }, 'd2l-textblock')
         //Save everything to a CSV
