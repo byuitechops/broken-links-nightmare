@@ -106,20 +106,26 @@ function scrapePage(nightmare) {
                 currentObject["Target URL"] = baseURL + currentObject["Target URL"];
                 return currentObject;
             })
-            //send an array of empty objects to SORT the data and decide the category of the data: Online, campus, reference, or other
-           /* everything.reduce(function (total, currentObject), [{}, {}, {}, {}]) {
-                //instead of accessing getItAll, access everything otherwise you'll get the raw data instead of the manipulated data.
-
-                if (currentObject["Linked From"] like '*Online.2017*') {
-                    //put it in the first object and send it to a function that only prints online csv
-                } else if (currentObject["Linked From"] like '*campus.*') {
-                    //put it in the second object and send to a function that will save it as its own CSV
-                } else if (currentObject["Linked From"] like '*.reference*') {
-                    //put it in the third object and send to a function that will save it as its own CSV
+            //send an object to SORT the data and decide the category of the data: Online, campus, reference, or other
+            everything.reduce(function (total, currentObject) {
+                if (currentObject["Linked From"].includes('Online.2017')) {
+                    //if the property of the object doesn't exist, create it.
+                    if (!total[currentObject]) {
+                        total[currentObject].online = ;
+                    }
+                    //if it does exist, add the current object to it.
+                    else {
+                        total += total[currentObject];
+                    }
+                } else if (currentObject["Linked From"].includes('*Campus*')) {
+                    //sort to campus
+                } else if (currentObject["Linked From"].includes('*Online.Reference*')) {
+                    //sort to online reference
                 } else {
-                    //put it in the fourth object and send to a function that will save it as its own CSV
+                    //sort to other
                 }
-            }*/
+
+            }, {});
             return everything;
         }, 'd2l-textblock')
         //Save everything to a CSV
