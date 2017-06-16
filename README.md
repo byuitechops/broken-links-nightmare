@@ -10,6 +10,6 @@ To install this program, copy the command on this line to clone the repository b
 In order to use this file, run the 'linkpagescrape.js' file from the command line using `node linkpagescrape`. The file will prompt for the following:
 1. A cct, ol, or functional equivalent username and password for d2l
 2. Beginning and ending date range for links you would like to view.
-  a. Keep in mind that the start date is required, and if you do not enter a start date, the program will restart. The end date is  optional with a default of today's date. If you don't type the dates in the correct format the program you'll have the option to start over.
+3. Keep in mind that the start date is required, and if you do not enter a start date, the program will restart. The end date is  optional with a default of today's date. If you don't type the dates in the correct format the program you'll have the option to start over.
   
 Program depends on `nightmare.js`, `prompt` & `d3-dsv` modules, but should be able to run on any machine.
