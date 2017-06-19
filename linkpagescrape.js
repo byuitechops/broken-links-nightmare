@@ -31,10 +31,44 @@ var credentials = [
     }
 ];
 
+function sortData(links) {
+    //created this array of objects to better modularize the sort function
+    var drawers = [{
+        name: "online",
+        search: "Online.2017"
+    }, {
+        name: "reference",
+        search: "Online.Reference"
+    }, {
+        name: "campus",
+        search: "Campus"
+    }, {
+        name: "other",
+        search: ""
+    }];
+
+    //check if each individual link matches its search property and if it does, push it to its respective drawer.
+    var sortedLinks = links.reduce(function (fileCabinet, link) {
+        for (var i = 0; i < drawers.length; i++) {
+            if (link.linkedFrom.match(drawers[i].search) !== null) {
+                if (!fileCabinet[drawers[i].name]) {
+                    fileCabinet[drawers[i].name] = [];
+                }
+                //add the link to it
+                fileCabinet[drawers[i].name].push(link);
+                //item found
+                i = drawers.length;
+            }
+        }
+        return fileCabinet;
+    }, {});
+
+    return sortedLinks;
+};
 //Go to the page with all the links. Sign in with user's creds and use the url to navigate to page with broken links.
 function startNightmare(nightmare) {
     nightmare
-        .viewport(1200, 900)
+        .viewport(1000, 700)
         .goto('https://byui.brightspace.com/d2l/login?noredirect=true')
         //prompt the user for their own credentials
         .type('#userName', promptInfo.username)
@@ -46,7 +80,6 @@ function startNightmare(nightmare) {
         .wait(1000)
 
 
-        /* .select('div.d2l-select-container select.vui-input.d2l-select option:nth-child(3)', '2')*/
         .evaluate(function () {
 
             document.querySelector('div.d2l-select-container select.vui-input.d2l-select option:nth-child(3)').selected = 'selected';
@@ -91,55 +124,33 @@ function scrapePage(nightmare) {
             for (var i = 0; i < entire.length; i++) {
                 var row = $(entire[i]).children().get();
                 //add the base URL to the beginning of all the items in the list
-                var baseURL = 'https://byui.brightspace.com';
+                var baseURL = window.location.origin; //'https://byui.brightspace.com', could also be used for pathway.
 
                 getItAll.push({
-                    'Linked From': $(row[1]).text().trim(),
+                    'linkedFrom': baseURL + $(row[1]).text().trim(),
                     'Clicks': $(row[2]).text().trim(),
-                    'Target URL': $(row[3]).text().trim(),
-                    'Latest Click': $(row[4]).text().trim()
+                    'targetURL': baseURL + $(row[3]).text().trim(),
+                    'latestClick': $(row[4]).text().trim()
                 });
             }
-            var everything = getItAll.map(function (currentObject) {
 
-                currentObject["Linked From"] = baseURL + currentObject["Linked From"];
-                currentObject["Target URL"] = baseURL + currentObject["Target URL"];
-                return currentObject;
-            })
-            //send an object to SORT the data and decide the category of the data: Online, campus, reference, or other
-            everything.reduce(function (total, currentObject) {
-                if (currentObject["Linked From"].includes('Online.2017')) {
-                    //if the property of the object doesn't exist, create it.
-                    if (!total[currentObject]) {
-                        total[currentObject].online = ;
-                    }
-                    //if it does exist, add the current object to it.
-                    else {
-                        total += total[currentObject];
-                    }
-                } else if (currentObject["Linked From"].includes('*Campus*')) {
-                    //sort to campus
-                } else if (currentObject["Linked From"].includes('*Online.Reference*')) {
-                    //sort to online reference
-                } else {
-                    //sort to other
-                }
+            return getItAll;
 
-            }, {});
-            return everything;
         }, 'd2l-textblock')
         //Save everything to a CSV
-
-
         .then(function (getItAll) {
+            //used to print test data:
+            //fs.writeFileSync('testData.json', JSON.stringify(getItAll, null, 4))
+
+            var fileCabinet = sortData(getItAll);
 
             //take a fileName and save the csv there
             var fileName = 'brokenLinks-online.csv';
-            var brokenLinks = (dsv.csvFormat(getItAll, ['Linked From', 'Clicks', 'Target URL', 'Latest Click']));
+            var brokenLinks = (dsv.csvFormat(fileCabinet, ['linkedFrom', 'Clicks', 'targetURL', 'latestClick']));
             fs.writeFileSync(fileName, brokenLinks);
             console.log('Your file has been saved as ' + fileName);
 
-            //sorted data should be saved according to its category(online, campous, reference or other)
+            //sorted data should be saved according to its category(online, campus, reference or other)
 
             return nightmare.end();
         }).catch(function (Error) {
@@ -179,6 +190,8 @@ prompt.get(credentials, function (err, result) {
         var defaultDate = month + '/' + day + '/' + year;
         result.endDate = today;
 
+    } else if (result.startDate == "") {
+        return;
     }
     //if they look back and realize the date is incorrect, exit the program, else continue
     if (result.correctDate == 'N') {
