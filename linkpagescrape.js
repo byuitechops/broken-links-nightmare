@@ -27,7 +27,7 @@ var credentials = [
     },
     {
         name: 'correctDate',
-        description: "You're sure the values you typed are correct? Y/N: "
+        description: "You're sure the date values you typed are correct? Y/N: "
     }
 ];
 
@@ -35,13 +35,13 @@ function sortData(links) {
     //created this array of objects to better modularize the sort function
     var drawers = [{
         name: "online",
-        search: "Online.2017"
+        search: /Online\.2017/i
     }, {
         name: "reference",
-        search: "Online.Reference"
+        search: /Online\.Reference/i
     }, {
         name: "campus",
-        search: "Campus"
+        search: /Campus/i
     }, {
         name: "other",
         search: ""
@@ -81,9 +81,11 @@ function startNightmare(nightmare) {
 
 
         .evaluate(function () {
-
-            document.querySelector('div.d2l-select-container select.vui-input.d2l-select option:nth-child(3)').selected = 'selected';
-            D2L.O("__g1", 47)();
+            //changes the value on the date select tag to the option we want
+            document.querySelector('[name="predefinedDates"] option:nth-child(3)').selected = 'selected';
+            //calles the onchagne function for the select tag
+            document.querySelector('[name="predefinedDates"]').onchange();
+            //        D2L.O("__g1", 47)();
         })
         .wait(1000)
         //take the input from the user and type it into a custom date range.
@@ -138,21 +140,24 @@ function scrapePage(nightmare) {
 
         }, 'd2l-textblock')
         //Save everything to a CSV
+        .end()
         .then(function (getItAll) {
             //used to print test data:
             //fs.writeFileSync('testData.json', JSON.stringify(getItAll, null, 4))
 
-            var fileCabinet = sortData(getItAll);
-
-            //take a fileName and save the csv there
-            var fileName = 'brokenLinks-online.csv';
-            var brokenLinks = (dsv.csvFormat(fileCabinet, ['linkedFrom', 'Clicks', 'targetURL', 'latestClick']));
-            fs.writeFileSync(fileName, brokenLinks);
-            console.log('Your file has been saved as ' + fileName);
+            //fileCabinet stores the data (an array)from the function sortData.
+            var fileCabinet = sortData(getItAll),
+                drawerName, fileName, brokenLinks;
+            for (drawerName in fileCabinet) {
+                //take a fileName and save the csv there
+                fileName = 'brokenLinks-' + drawerName + '.csv';
+                brokenLinks = (dsv.csvFormat(fileCabinet[drawerName], ['linkedFrom', 'Clicks', 'targetURL', 'latestClick']));
+                fs.writeFileSync(fileName, brokenLinks);
+                console.log('Your file has been saved as ' + fileName);
+            }
 
             //sorted data should be saved according to its category(online, campus, reference or other)
 
-            return nightmare.end();
         }).catch(function (Error) {
             console.log('The error was: ', Error);
         })
