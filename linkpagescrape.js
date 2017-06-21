@@ -37,6 +37,12 @@ function sortData(links) {
         name: "online",
         search: /Online\.2017/i
     }, {
+        name: "sso",
+        search: /SSO/
+    }, {
+        name: "templates",
+        search: /Web%20Files/i
+    }, {
         name: "reference",
         search: /Online\.Reference/i
     }, {
@@ -65,7 +71,13 @@ function sortData(links) {
 
     return sortedLinks;
 };
-//Go to the page with all the links. Sign in with user's creds and use the url to navigate to page with broken links.
+
+function fixDate(dateString) {
+    return dateString.replace(/\//g, '-')
+}
+
+//Go to the page with all the links. Sign in with user's creds and use the url to navigate to page with broken links
+
 function startNightmare(nightmare) {
     nightmare
         .viewport(1000, 700)
@@ -83,7 +95,7 @@ function startNightmare(nightmare) {
         .evaluate(function () {
             //changes the value on the date select tag to the option we want
             document.querySelector('[name="predefinedDates"] option:nth-child(3)').selected = 'selected';
-            //calls the onchagne function for the select tag
+            //calls the onchange function for the select tag
             document.querySelector('[name="predefinedDates"]').onchange();
             //        D2L.O("__g1", 47)();
         })
@@ -150,7 +162,7 @@ function scrapePage(nightmare) {
                 drawerName, fileName, brokenLinks;
             for (drawerName in fileCabinet) {
                 //take a fileName and save the csv there
-                fileName = 'brokenLinks-' + drawerName + '.csv';
+                fileName = 'brokenLinks_' + drawerName + '_' + fixDate(dateInfo.startDate) + '_' + fixDate(dateInfo.endDate) + '.csv';
                 brokenLinks = (dsv.csvFormat(fileCabinet[drawerName], ['linkedFrom', 'Clicks', 'targetURL', 'latestClick']));
                 fs.writeFileSync(fileName, brokenLinks);
                 console.log('Your file has been saved as ' + fileName);
