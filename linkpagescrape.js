@@ -83,7 +83,7 @@ function startNightmare(nightmare) {
         .evaluate(function () {
             //changes the value on the date select tag to the option we want
             document.querySelector('[name="predefinedDates"] option:nth-child(3)').selected = 'selected';
-            //calles the onchagne function for the select tag
+            //calls the onchagne function for the select tag
             document.querySelector('[name="predefinedDates"]').onchange();
             //        D2L.O("__g1", 47)();
         })
