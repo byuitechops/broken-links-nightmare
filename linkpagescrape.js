@@ -1,3 +1,7 @@
+/*eslint-env node*/
+/*eslint no-console:0*/
+/*global $, document, window*/
+
 var Nightmare = require('nightmare');
 var nightmare = new Nightmare({
     show: true
@@ -73,7 +77,7 @@ function sortData(links) {
     }, {});
 
     return sortedLinks;
-};
+}
 
 function fixDate(dateString) {
     return dateString.replace(/\//g, '-')
@@ -132,7 +136,7 @@ function startNightmare(nightmare) {
 //take the table from the page and store it in an array
 function scrapePage(nightmare) {
     nightmare
-        .evaluate(function (selector) {
+        .evaluate(function () {
             //create an array to store all the things
             var getItAll = [];
 
@@ -206,7 +210,7 @@ prompt.get(credentials, function (err, result) {
 
 
         var defaultDate = month + '/' + day + '/' + year;
-        result.endDate = today;
+        result.endDate = defaultDate;
 
     } else if (result.startDate == "") {
         return;
@@ -215,11 +219,11 @@ prompt.get(credentials, function (err, result) {
     if (result.correctDate == 'N') {
         return;
     } else {
-    dateInfo = {
-        startDate: result.startDate,
-        endDate: result.endDate,
-        correctDate: result.correctDate
-    }
+        dateInfo = {
+            startDate: result.startDate,
+            endDate: result.endDate,
+            correctDate: result.correctDate
+        }
         console.log('Thanks, checking credentials...')
         startNightmare(nightmare)
     }
