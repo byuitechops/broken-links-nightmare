@@ -49,6 +49,9 @@ function sortData(links) {
         name: "campus",
         search: /Campus/i
     }, {
+        name: "calendar",
+        search: /\/calendar\//
+    }, {
         name: "other",
         search: ""
     }];
@@ -160,6 +163,9 @@ function scrapePage(nightmare) {
             //fileCabinet stores the data (an array)from the function sortData.
             var fileCabinet = sortData(getItAll),
                 drawerName, fileName, brokenLinks;
+            //makes a csv of all of the data unsorted    
+            fileCabinet.all = getItAll;
+
             for (drawerName in fileCabinet) {
                 //take a fileName and save the csv there
                 fileName = 'brokenLinks_' + drawerName + '_' + fixDate(dateInfo.startDate) + '_' + fixDate(dateInfo.endDate) + '.csv';
@@ -192,11 +198,6 @@ prompt.get(credentials, function (err, result) {
         username: result.username,
         password: result.password
     }
-    dateInfo = {
-        startDate: result.startDate,
-        endDate: result.endDate,
-        correctDate: result.correctDate
-    }
     if (result.endDate == "") {
         var today = new Date();
         var day = today.getDate();
@@ -214,6 +215,11 @@ prompt.get(credentials, function (err, result) {
     if (result.correctDate == 'N') {
         return;
     } else {
+    dateInfo = {
+        startDate: result.startDate,
+        endDate: result.endDate,
+        correctDate: result.correctDate
+    }
         console.log('Thanks, checking credentials...')
         startNightmare(nightmare)
     }
