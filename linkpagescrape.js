@@ -41,20 +41,20 @@ function sortData(links) {
         name: "online",
         search: /Online\.2017/i
     }, {
-        name: "sso",
-        search: /SSO/
+        name: "reference",
+        search: /Online\.Reference/i
     }, {
         name: "templates",
         search: /Web%20Files/i
     }, {
-        name: "reference",
-        search: /Online\.Reference/i
+        name: "calendar",
+        search: /\/calendar\//
+    }, {
+        name: "sso",
+        search: /SSO/
     }, {
         name: "campus",
         search: /Campus/i
-    }, {
-        name: "calendar",
-        search: /\/calendar\//
     }, {
         name: "other",
         search: ""
