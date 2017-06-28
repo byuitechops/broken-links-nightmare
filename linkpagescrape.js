@@ -178,7 +178,7 @@ function scrapePage(nightmare) {
                 fileName = 'brokenLinks_' + drawerName + '_' + fixDate(dateInfo.startDate) + '_' + fixDate(dateInfo.endDate) + '.csv';
                 brokenLinks = (dsv.csvFormat(fileCabinet[drawerName], columns));
                 fs.writeFileSync(fileName, brokenLinks);
-                csvToTable.fromArray(fileCabinet[drawerName], columns, false, false, fileName);
+                csvToTable.fromArray(fileCabinet[drawerName], columns, false, true, fileName);
                 console.log('Your file has been saved as ' + fileName);
             }
 
