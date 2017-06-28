@@ -8,6 +8,7 @@ var Nightmare = require('nightmare');
 var nightmare = new Nightmare({
     show: true
 });
+var csvToTable = require('csv-to-table')
 var dsv = require('d3-dsv')
 var fs = require('fs')
 var prompt = require('prompt')
@@ -100,7 +101,6 @@ function startNightmare(nightmare) {
         //Wait for page to load
         .wait(1000)
 
-
         .evaluate(function () {
             //changes the value on the date select tag to the option we want
             document.querySelector('[name="predefinedDates"] option:nth-child(3)').selected = 'selected';
@@ -168,6 +168,7 @@ function scrapePage(nightmare) {
 
             //fileCabinet stores the data (an array)from the function sortData.
             var fileCabinet = sortData(getItAll),
+                columns = ['linkedFrom', 'Clicks', 'targetURL', 'latestClick'],
                 drawerName, fileName, brokenLinks;
             //makes a csv of all of the data unsorted    
             fileCabinet.all = getItAll;
@@ -175,8 +176,9 @@ function scrapePage(nightmare) {
             for (drawerName in fileCabinet) {
                 //take a fileName and save the csv there
                 fileName = 'brokenLinks_' + drawerName + '_' + fixDate(dateInfo.startDate) + '_' + fixDate(dateInfo.endDate) + '.csv';
-                brokenLinks = (dsv.csvFormat(fileCabinet[drawerName], ['linkedFrom', 'Clicks', 'targetURL', 'latestClick']));
+                brokenLinks = (dsv.csvFormat(fileCabinet[drawerName], columns));
                 fs.writeFileSync(fileName, brokenLinks);
+                csvToTable.fromArray(fileCabinet[drawerName], columns, false, false, fileName);
                 console.log('Your file has been saved as ' + fileName);
             }
 
