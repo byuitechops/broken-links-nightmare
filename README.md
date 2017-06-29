@@ -6,7 +6,7 @@ The user enters a date range that is entered into a custom date range field in d
 The entire list found in D2L is then scraped and saved to a CSV file. The list is sorted based on online, campus, and reference courses.
 ## Instructions
 To install this program, copy the following:`npm install -g https://github.com/byuitechops/broken-links-nightmare.git`. Type this into your command line to install the program. 
-In order to use this file, run the 'linkpagescrape.js' file from the command line using `node linkpagescrape`. The file will prompt for the following:
+In order to use this file, run the file from the command line by typing `d2l-broken-links`. The file will prompt for the following:
 1. A cct, ol, or functional equivalent username and password for d2l
 2. Beginning and ending date range for links you would like to view.
 3. Keep in mind that the start date is required, and if you do not enter a start date, the program will give you the option to restart later on, or you can just restart it yourself. The end date is  optional with a default of today's date. If you don't type the dates in the correct format the program you'll have the option to start over, which will require you to run the command again.
