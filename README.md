@@ -1,4 +1,4 @@
-# broken-links-nightmare
+# d2l-broken-links
 This program uses nightmare to open up a page in D2L that lists the broken links in D2L at BYU-Idaho. 
 
 The user enters a date range that is entered into a custom date range field in d2l. The date range is applied and then the 'Load More' button is selected until it no longer exists.
