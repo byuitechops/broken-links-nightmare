@@ -14,7 +14,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Ashley Stewart",
-  "license": "ISC",
+  "license": "MIT",
   "preferGlobal": true,
   "bin": {
     "d2l-broken-links": "./linkpagescrape.js"
