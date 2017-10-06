@@ -6,12 +6,30 @@
 
 var Nightmare = require('nightmare');
 var nightmare = new Nightmare({
-    show: true
+    show: true,
+    openDevTools: {
+        mode: 'detach'
+    },
+    alwaysOnTop: false
 });
 var csvToTable = require('csv-to-table')
 var dsv = require('d3-dsv')
 var fs = require('fs')
 var prompt = require('prompt')
+
+/*the following variables are selectors used in the program that can be changed later if needed*/
+var usersName = '#userName',
+    usersPassword = '#password';
+var login = '.d2l-button';
+var select = '[name="predefinedDates"] option:nth-child(3)';
+var dropdownItem = '[name="predefinedDates"]';
+var startField = '#startDate';
+var endField = '#endDate';
+var apply = '#optionsForm > div:nth-of-type(1) button';
+var loadMoreVisible = '.d2l-loadmore-pager:visible';
+var loadMoreClick = '.d2l-loadmore-pager';
+var rowGuts = '.vui-table tbody tr';
+//var wholeTable = 'table[is="d2l-table"]';
 
 var credentials = [
     {
@@ -93,57 +111,61 @@ function startNightmare(nightmare) {
         .viewport(1000, 700)
         .goto('https://byui.brightspace.com/d2l/login?noredirect=true')
         //prompt the user for their own credentials
-        .type('#userName', promptInfo.username)
-        .type('#password', promptInfo.password)
-        .click('.d2l-button')
+        .type(usersName, promptInfo.username)
+        .type(usersPassword, promptInfo.password)
+        .click(login)
         .wait(3000)
         .goto('https://byui.brightspace.com/d2l/brokenLinks/6606')
         //Wait for page to load
         .wait(1000)
 
-        .evaluate(function () {
+        .evaluate(function (select, dropdownItem) {
             //changes the value on the date select tag to the option we want
-            document.querySelector('[name="predefinedDates"] option:nth-child(3)').selected = 'selected';
+            document.querySelector(select).selected = 'selected';
             //calls the onchange function for the select tag
-            document.querySelector('[name="predefinedDates"]').onchange();
+            document.querySelector(dropdownItem).onchange();
             //        D2L.O("__g1", 47)();
-        })
+        }, select, dropdownItem)
         .wait(1000)
         //take the input from the user and type it into a custom date range.
-        .evaluate(function (dateInfo) {
-            document.getElementById('startDate').value = dateInfo.startDate;
-            document.getElementById('endDate').value = dateInfo.endDate;
+        .evaluate(function (dateInfo, startField, endField) {
+            document.querySelector(startField).value = dateInfo.startDate;
+            document.querySelector(endField).value = dateInfo.endDate;
 
-        }, dateInfo)
-        .type('#endDate', ' ')
+        }, dateInfo, startField, endField)
+        .type(endField, ' ')
         .wait(2000)
-        .click('#optionsForm div:nth-of-type(1) > a')
+        //click the apply button
+        .click(apply)
         //If the selector button called "Load more" exists, click it
-        .evaluate(function (callback) {
+        .evaluate(function (loadMoreVisible, loadMoreClick, callback) {
             function clickLoad() {
-                if ($('.d2l-loadmore-pager:visible').length) {
-                    $('.d2l-loadmore-pager').click()
+                if ($(loadMoreVisible).length) {
+                    $(loadMoreClick).click()
                     setTimeout(clickLoad, 500)
                 } else {
                     callback();
                 }
             }
             clickLoad()
-        })
+        }, loadMoreVisible, loadMoreClick)
+
         .then(function () {
             scrapePage(nightmare)
+        }).catch(function (err) {
+            console.error(err)
         })
 }
 //When it no longer exists, scrape the page of info
 //take the table from the page and store it in an array
 function scrapePage(nightmare) {
     nightmare
-        .evaluate(function () {
+        .evaluate(function (rowGuts) {
             //create an array to store all the things
             var getItAll = [];
 
             //then scrape the information and push all of the objects to the array
-            var entire = $('.vui-table tbody tr').get();
+            var entire = $(rowGuts).get();
             for (var i = 0; i < entire.length; i++) {
                 var row = $(entire[i]).children().get();
                 //add the base URL to the beginning of all the items in the list
@@ -159,7 +181,7 @@ function scrapePage(nightmare) {
 
             return getItAll;
 
-        }, 'd2l-textblock')
+        }, rowGuts)
         //Save everything to a CSV
         .end()
         .then(function (getItAll) {
