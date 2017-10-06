@@ -28,8 +28,7 @@ var endField = '#endDate';
 var apply = '#optionsForm > div:nth-of-type(1) button';
 var loadMoreVisible = '.d2l-loadmore-pager:visible';
 var loadMoreClick = '.d2l-loadmore-pager';
-var rowGuts = '.vui-table tbody tr';
-//var wholeTable = 'table[is="d2l-table"]';
+var rowGuts = 'table > tbody > tr';
 
 var credentials = [
     {
@@ -65,6 +64,9 @@ function sortData(links) {
         name: "reference",
         search: /Online\.Reference/i
     }, {
+        name: "campus",
+        search: /Campus/i
+    }, {
         name: "templates",
         search: /Web%20Files/i
     }, {
@@ -73,9 +75,6 @@ function sortData(links) {
     }, {
         name: "sso",
         search: /SSO/
-    }, {
-        name: "campus",
-        search: /Campus/i
     }, {
         name: "other",
         search: ""
@@ -201,7 +200,7 @@ function scrapePage(nightmare) {
                 brokenLinks = (dsv.csvFormat(fileCabinet[drawerName], columns));
                 fs.writeFileSync(fileName, brokenLinks);
                 csvToTable.fromArray(fileCabinet[drawerName], columns, false, true, fileName);
-                console.log('Your file has been saved as ' + fileName);
+                console.log('Success! Check your local directory for the CSVs.');
             }
 
             //sorted data should be saved according to its category(online, campus, reference or other)
