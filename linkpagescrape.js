@@ -17,7 +17,7 @@ var dsv = require('d3-dsv')
 var fs = require('fs')
 var prompt = require('prompt')
 
-/*the following variables are selectors used in the program that can be changed later if needed*/
+//selectors for the nightmare thing to happen
 var usersName = '#userName',
     usersPassword = '#password';
 var login = '.d2l-button';
@@ -30,6 +30,7 @@ var loadMoreVisible = '.d2l-loadmore-pager:visible';
 var loadMoreClick = '.d2l-loadmore-pager';
 var rowGuts = 'table > tbody > tr';
 
+//prompt messages for the user
 var credentials = [
     {
         name: 'username',
@@ -56,7 +57,7 @@ var credentials = [
 ];
 
 function sortData(links) {
-    //created this array of objects to better modularize the sort function
+    //filtering drawers
     var drawers = [{
         name: "online",
         search: /Online\.2017/i
@@ -160,7 +161,7 @@ function startNightmare(nightmare) {
 function scrapePage(nightmare) {
     nightmare
         .evaluate(function (rowGuts) {
-            //create an array to store all the things
+            //create an array to store guts of the table
             var getItAll = [];
 
             //then scrape the information and push all of the objects to the array
@@ -184,9 +185,7 @@ function scrapePage(nightmare) {
         //Save everything to a CSV
         .end()
         .then(function (getItAll) {
-            //used to print test data:
-            //fs.writeFileSync('testData.json', JSON.stringify(getItAll, null, 4))
-
+            //used to print test data://fs.writeFileSync('testData.json', JSON.stringify(getItAll, null, 4))
             //fileCabinet stores the data (an array)from the function sortData.
             var fileCabinet = sortData(getItAll),
                 columns = ['linkedFrom', 'Clicks', 'targetURL', 'latestClick'],
@@ -211,13 +210,13 @@ function scrapePage(nightmare) {
 
 }
 
-//retrieve username and password from the user
 var promptInfo = {};
 var dateInfo = {};
 
 prompt.start();
 
 
+//retrieve username and password from the user
 prompt.get(credentials, function (err, result) {
     if (err) {
         console.log(err);
@@ -227,6 +226,7 @@ prompt.get(credentials, function (err, result) {
         username: result.username,
         password: result.password
     }
+    //should I try to use momentjs?
     if (result.endDate == "") {
         var today = new Date();
         var day = today.getDate();
@@ -249,6 +249,7 @@ prompt.get(credentials, function (err, result) {
             endDate: result.endDate,
             correctDate: result.correctDate
         }
+        //login and begin nightmare
         console.log('Thanks, checking credentials...')
         startNightmare(nightmare)
     }
