@@ -18,4 +18,4 @@ With the csv-to-table library now in place, the csv's that are saved now are als
 
 The "Linked From" title just means that the link that was broken was found on that specific page. The clicks is the number of clicks, the targetURL(to my understanding) is the broken link itself, and the Latest click is the most recent time that any one user clicked on the link.
 
-Program depends on `nightmare.js`, `prompt`, `yargs` & `d3-dsv` modules, but should be able to run on any machine if the package.json is updated.
+Program depends on `nightmare.js`, `prompt`,  & `d3-dsv` modules, runs through `csv-to-table`.
