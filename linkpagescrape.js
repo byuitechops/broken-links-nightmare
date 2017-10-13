@@ -28,7 +28,7 @@ var endField = '#endDate';
 var apply = '#optionsForm > div:nth-of-type(1) button';
 var loadMoreVisible = '.d2l-loadmore-pager:visible';
 var loadMoreClick = '.d2l-loadmore-pager';
-var rowGuts = 'table > tbody > tr';
+var rowGuts = 'table[is="d2l-table"] > tbody > tr';
 
 //prompt messages for the user
 var credentials = [
@@ -198,7 +198,7 @@ function scrapePage(nightmare) {
                 fileName = 'brokenLinks_' + drawerName + '_' + fixDate(dateInfo.startDate) + '_' + fixDate(dateInfo.endDate) + '.csv';
                 brokenLinks = (dsv.csvFormat(fileCabinet[drawerName], columns));
                 fs.writeFileSync(fileName, brokenLinks);
-                csvToTable.fromArray(fileCabinet[drawerName], columns, false, true, fileName);
+                csvToTable.fromArray(fileCabinet[drawerName], columns, true, true, fileName);
                 console.log('Success! Check your local directory for the CSVs.');
             }
 
@@ -238,6 +238,7 @@ prompt.get(credentials, function (err, result) {
         result.endDate = defaultDate;
 
     } else if (result.startDate == "") {
+        //result.startDate == 'defaultDate'; is this what I want??
         return;
     }
     //if they look back and realize the date is incorrect, exit the program, else continue
