@@ -198,7 +198,7 @@ function scrapePage(nightmare) {
                 fileName = 'brokenLinks_' + drawerName + '_' + fixDate(dateInfo.startDate) + '_' + fixDate(dateInfo.endDate);
                 brokenLinks = (dsv.csvFormat(fileCabinet[drawerName], columns));
                 fs.writeFileSync(fileName + '.csv', brokenLinks);
-                csvToTable.fromArray(fileCabinet[drawerName], columns, true, true, fileName);
+                csvToTable.fromArray(fileCabinet[drawerName], columns, false, true, fileName);
                 console.log('Success! Check your local directory for the CSVs.');
             }
 
