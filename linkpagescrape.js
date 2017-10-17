@@ -7,9 +7,9 @@
 var Nightmare = require('nightmare');
 var nightmare = new Nightmare({
     show: true,
-    openDevTools: {
-        mode: 'detach'
-    },
+    /* openDevTools: {
+     mode: 'detach'
+ },*/
     alwaysOnTop: false
 });
 var csvToTable = require('csv-to-table')
@@ -59,39 +59,53 @@ var credentials = [
 function sortData(links) {
     //filtering drawers
     var drawers = [{
-        name: "online",
-        search: /Online\.2017/i
+            name: "not-campus",
+            search: /Campus/i,
+            invertMatch: true
     }, {
-        name: "reference",
-        search: /Online\.Reference/i
+            name: "online",
+            search: /Online\.2017/i
+
     }, {
-        name: "campus",
-        search: /Campus/i
+            name: "reference",
+            search: /Online\.Reference/i
+
     }, {
-        name: "templates",
-        search: /Web%20Files/i
+            name: "campus",
+            search: /Campus/i
+        }
+        , {
+            name: "templates",
+            search: /Web%20Files/i
+
     }, {
-        name: "calendar",
-        search: /\/calendar\//
+            name: "calendar",
+            search: /\/calendar\//
+
     }, {
-        name: "sso",
-        search: /SSO/
-    }, {
-        name: "other",
-        search: ""
+            name: "sso",
+            search: /SSO/
+
     }];
 
     //check if each individual link matches its search property and if it does, push it to its respective drawer.
     var sortedLinks = links.reduce(function (fileCabinet, link) {
         for (var i = 0; i < drawers.length; i++) {
-            if (link.linkedFrom.match(drawers[i].search) !== null) {
+            var isMatch = link.linkedFrom.match(drawers[i].search) !== null;
+            /*will check if we want to keep that category at all*/
+            if (drawers[i].invertMatch) {
+                isMatch = !isMatch;
+            }
+            /*check the regex for search*/
+            if (isMatch) {
                 if (!fileCabinet[drawers[i].name]) {
                     fileCabinet[drawers[i].name] = [];
                 }
                 //add the link to it
                 fileCabinet[drawers[i].name].push(link);
                 //item found
-                i = drawers.length;
+                //no longer needed when 'other' drawer in fileCabinet, now it will duplicate wherever it matches which could be in two drawers
+                //i = drawers.length;
             }
         }
         return fileCabinet;
@@ -168,7 +182,7 @@ function scrapePage(nightmare) {
             var entire = $(rowGuts).get();
             for (var i = 0; i < entire.length; i++) {
                 var row = $(entire[i]).children().get();
-                //add the base URL to the beginning of all the items in the list
+                //add the base URL to the beginning of each of the items in the list
                 var baseURL = window.location.origin; //'https://byui.brightspace.com', could also be used for pathway.
 
                 getItAll.push({
@@ -198,7 +212,7 @@ function scrapePage(nightmare) {
                 fileName = 'brokenLinks_' + drawerName + '_' + fixDate(dateInfo.startDate) + '_' + fixDate(dateInfo.endDate);
                 brokenLinks = (dsv.csvFormat(fileCabinet[drawerName], columns));
                 fs.writeFileSync(fileName + '.csv', brokenLinks);
-                csvToTable.fromArray(fileCabinet[drawerName], columns, true, true, fileName);
+                csvToTable.fromArray(fileCabinet[drawerName], columns, false, true, fileName);
                 console.log('Success! Check your local directory for the CSVs.');
             }
 
