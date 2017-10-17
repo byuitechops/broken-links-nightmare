@@ -175,6 +175,9 @@ function startNightmare(nightmare) {
 function scrapePage(nightmare) {
     nightmare
         .evaluate(function (rowGuts) {
+            function removeSpaces(url) {
+                return url.trim().replace(/ /g, "%20");
+            }
             //create an array to store guts of the table
             var getItAll = [];
 
@@ -186,9 +189,9 @@ function scrapePage(nightmare) {
                 var baseURL = window.location.origin; //'https://byui.brightspace.com', could also be used for pathway.
 
                 getItAll.push({
-                    'linkedFrom': baseURL + $(row[1]).text().trim(),
+                    'linkedFrom': removeSpaces(baseURL + $(row[1]).text().trim()),
                     'Clicks': $(row[2]).text().trim(),
-                    'targetURL': baseURL + $(row[3]).text().trim(),
+                    'targetURL': removeSpaces(baseURL + $(row[3]).text().trim()),
                     'latestClick': $(row[4]).text().trim()
                 });
             }
