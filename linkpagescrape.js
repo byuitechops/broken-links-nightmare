@@ -4,14 +4,16 @@
 /*eslint no-console:0*/
 /*global $, document, window*/
 
+//constants to change
+var beginSemester = '9/11/17'
+
+//required files and modules
 var Nightmare = require('nightmare');
 var nightmare = new Nightmare({
     show: true,
-    /* openDevTools: {
-     mode: 'detach'
- },*/
     alwaysOnTop: false
 });
+var moment = require('moment')
 var csvToTable = require('csv-to-table')
 var dsv = require('d3-dsv')
 var fs = require('fs')
@@ -34,37 +36,40 @@ var rowGuts = 'table[is="d2l-table"] > tbody > tr';
 var credentials = [
     {
         name: 'username',
-        description: 'Please enter your username'
+        description: 'Please enter your username',
+        required: true,
+        message: "I need a username to login with. try again."
     },
     {
         name: 'password',
         description: 'Please enter your password',
         hidden: true,
-        replace: '*'
+        replace: '*',
+        required: true
     },
     {
         name: 'startDate',
-        description: 'Type a start date for the date range using the format "m/d/yyyy"'
+        description: 'Start date for the date range, m/d/yy',
+        default: moment(beginSemester, "MM/DD/YY").format("M/D/YY")
     },
     {
         name: 'endDate',
-        description: 'Type an end date for the date range using the format "m/d/yyyy"'
-    },
-    {
-        name: 'correctDate',
-        description: "You're sure the date values you typed are correct? Y/N: "
+        description: 'End date for the date range,  m/d/yy',
+        default: moment().format("M/D/YY")
     }
 ];
 
-function sortData(links) {
+function sortData(links, promptInfo) {
     //filtering drawers
+    var startDateYear = promptInfo.startDate.get('year').toString()
     var drawers = [{
             name: "not-campus",
             search: /Campus/i,
             invertMatch: true
     }, {
-            name: "online",
-            search: /Online\.2017/i
+            name: "online" + startDateYear,
+            //add the year abstractly through a variable created by promptInfo
+            search: new RegExp('Online\.' + startDateYear, 'i')
 
     }, {
             name: "reference",
@@ -114,13 +119,9 @@ function sortData(links) {
     return sortedLinks;
 }
 
-function fixDate(dateString) {
-    return dateString.replace(/\//g, '-')
-}
-
 //Go to the page with all the links. Sign in with user's creds and use the url to navigate to page with broken links
 
-function startNightmare(nightmare) {
+function startNightmare(nightmare, promptInfo) {
     nightmare
         .viewport(1000, 700)
         .goto('https://byui.brightspace.com/d2l/login?noredirect=true')
@@ -142,11 +143,11 @@ function startNightmare(nightmare) {
         }, select, dropdownItem)
         .wait(1000)
         //take the input from the user and type it into a custom date range.
-        .evaluate(function (dateInfo, startField, endField) {
-            document.querySelector(startField).value = dateInfo.startDate;
-            document.querySelector(endField).value = dateInfo.endDate;
+        .evaluate(function (startDate, endDate, startField, endField) {
+            document.querySelector(startField).value = startDate;
+            document.querySelector(endField).value = endDate;
 
-        }, dateInfo, startField, endField)
+        }, promptInfo.startDate.format('M/D/YYYY'), promptInfo.endDate.format('M/D/YYYY'), startField, endField)
         .type(endField, ' ')
         .wait(2000)
         //click the apply button
@@ -165,14 +166,13 @@ function startNightmare(nightmare) {
         }, loadMoreVisible, loadMoreClick)
 
         .then(function () {
-            scrapePage(nightmare)
+            scrapePage(nightmare, promptInfo)
         }).catch(function (err) {
             console.error(err)
         })
 }
 //When it no longer exists, scrape the page of info
-//take the table from the page and store it in an array
-function scrapePage(nightmare) {
+function scrapePage(nightmare, promptInfo) {
     nightmare
         .evaluate(function (rowGuts) {
             function removeSpaces(url) {
@@ -204,7 +204,7 @@ function scrapePage(nightmare) {
         .then(function (getItAll) {
             //used to print test data://fs.writeFileSync('testData.json', JSON.stringify(getItAll, null, 4))
             //fileCabinet stores the data (an array)from the function sortData.
-            var fileCabinet = sortData(getItAll),
+            var fileCabinet = sortData(getItAll, promptInfo),
                 columns = ['linkedFrom', 'Clicks', 'targetURL', 'latestClick'],
                 drawerName, fileName, brokenLinks;
             //makes a csv of all of the data unsorted    
@@ -212,7 +212,7 @@ function scrapePage(nightmare) {
 
             for (drawerName in fileCabinet) {
                 //take a fileName and save the csv there
-                fileName = 'brokenLinks_' + drawerName + '_' + fixDate(dateInfo.startDate) + '_' + fixDate(dateInfo.endDate);
+                fileName = 'brokenLinks_' + drawerName + '_' + promptInfo.startDate.format("MM-DD-YYYY") + '_' + promptInfo.endDate.format("MM-DD-YYYY");
                 brokenLinks = (dsv.csvFormat(fileCabinet[drawerName], columns));
                 fs.writeFileSync(fileName + '.csv', brokenLinks);
                 csvToTable.fromArray(fileCabinet[drawerName], columns, false, true, fileName);
@@ -227,49 +227,31 @@ function scrapePage(nightmare) {
 
 }
 
-var promptInfo = {};
-var dateInfo = {};
-
-prompt.start();
-
 
 //retrieve username and password from the user
 prompt.get(credentials, function (err, result) {
     if (err) {
         console.log(err);
-    }
-
-    promptInfo = {
-        username: result.username,
-        password: result.password
-    }
-    //should I try to use momentjs?
-    if (result.endDate == "") {
-        var today = new Date();
-        var day = today.getDate();
-        var month = today.getMonth() + 1;
-        var year = today.getFullYear();
-
-
-        var defaultDate = month + '/' + day + '/' + year;
-        result.endDate = defaultDate;
-
-    } else if (result.startDate == "") {
-        //result.startDate == 'defaultDate'; is this what I want??
         return;
     }
-    //if they look back and realize the date is incorrect, exit the program, else continue
-    if (result.correctDate == 'N') {
-        return;
-    } else {
-        dateInfo = {
-            startDate: result.startDate,
-            endDate: result.endDate,
-            correctDate: result.correctDate
-        }
+
+    //check if user input dates are valid dates 
+    result.startDate = moment(result.startDate, "M-D-YY");
+    result.endDate = moment(result.endDate, "M-D-YY");
+    result.datesAreValid = result.startDate.isValid() && result.startDate.isValid();
+
+    //if date is invalid, exit the program, else continue
+
+    if (result.datesAreValid) {
         //login and begin nightmare
-        console.log('Thanks, checking credentials...')
-        startNightmare(nightmare)
+        console.log('Signing in...')
+        startNightmare(nightmare, result)
+    } else {
+        console.log('\nOne or both of your dates did not folow the format "M/D/YY"')
+        return;
     }
 
 });
+
+//run prompt
+prompt.start();
