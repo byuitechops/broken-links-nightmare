@@ -2,4 +2,3 @@
 *.html
 package-lock.json
 node_modules/
-moment-test.js

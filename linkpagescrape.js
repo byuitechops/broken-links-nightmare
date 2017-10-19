@@ -20,17 +20,19 @@ var fs = require('fs')
 var prompt = require('prompt')
 
 //selectors for the nightmare thing to happen
-var usersName = '#userName',
-    usersPassword = '#password';
-var login = '.d2l-button';
-var select = '[name="predefinedDates"] option:nth-child(3)';
-var dropdownItem = '[name="predefinedDates"]';
-var startField = '#startDate';
-var endField = '#endDate';
-var apply = '#optionsForm > div:nth-of-type(1) button';
-var loadMoreVisible = '.d2l-loadmore-pager:visible';
-var loadMoreClick = '.d2l-loadmore-pager';
-var rowGuts = 'table[is="d2l-table"] > tbody > tr';
+var clickButton = {
+    usersName: '#userName',
+    usersPassword: '#password',
+    login: '.d2l-button',
+    select: '[name="predefinedDates"] option:nth-child(3)',
+    dropdownItem: '[name="predefinedDates"]',
+    startField: '#startDate',
+    endField: '#endDate',
+    apply: '#optionsForm > div:nth-of-type(1) button',
+    loadMoreVisible: '.d2l-loadmore-pager:visible',
+    loadMoreClick: '.d2l-loadmore-pager',
+    rowGuts: 'table[is="d2l-table"] > tbody > tr'
+}
 
 //prompt messages for the user
 var credentials = [
@@ -121,49 +123,49 @@ function sortData(links, promptInfo) {
 
 //Go to the page with all the links. Sign in with user's creds and use the url to navigate to page with broken links
 
-function startNightmare(nightmare, promptInfo) {
+function startNightmare(nightmare, promptInfo, clickButton) {
     nightmare
         .viewport(1000, 700)
         .goto('https://byui.brightspace.com/d2l/login?noredirect=true')
         //prompt the user for their own credentials
-        .type(usersName, promptInfo.username)
-        .type(usersPassword, promptInfo.password)
-        .click(login)
+        .type(clickButton.usersName, promptInfo.username)
+        .type(clickButton.usersPassword, promptInfo.password)
+        .click(clickButton.login)
         .wait(3000)
         .goto('https://byui.brightspace.com/d2l/brokenLinks/6606')
         //Wait for page to load
         .wait(1000)
 
-        .evaluate(function (select, dropdownItem) {
+        .evaluate(function (clickButton) {
             //changes the value on the date select tag to the option we want
-            document.querySelector(select).selected = 'selected';
+            document.querySelector(clickButton.select).selected = 'selected';
             //calls the onchange function for the select tag
-            document.querySelector(dropdownItem).onchange();
+            document.querySelector(clickButton.dropdownItem).onchange();
             //        D2L.O("__g1", 47)();
-        }, select, dropdownItem)
+        }, clickButton)
         .wait(1000)
         //take the input from the user and type it into a custom date range.
-        .evaluate(function (startDate, endDate, startField, endField) {
-            document.querySelector(startField).value = startDate;
-            document.querySelector(endField).value = endDate;
+        .evaluate(function (startDate, endDate, clickButton) {
+            document.querySelector(clickButton.startField).value = startDate;
+            document.querySelector(clickButton.endField).value = endDate;
 
-        }, promptInfo.startDate.format('M/D/YYYY'), promptInfo.endDate.format('M/D/YYYY'), startField, endField)
-        .type(endField, ' ')
+        }, promptInfo.startDate.format('M/D/YYYY'), promptInfo.endDate.format('M/D/YYYY'), clickButton)
+        .type(clickButton.endField, ' ')
         .wait(2000)
         //click the apply button
-        .click(apply)
+        .click(clickButton.apply)
         //If the selector button called "Load more" exists, click it
-        .evaluate(function (loadMoreVisible, loadMoreClick, callback) {
+        .evaluate(function (clickButton, callback) {
             function clickLoad() {
-                if ($(loadMoreVisible).length) {
-                    $(loadMoreClick).click()
+                if ($(clickButton.loadMoreVisible).length) {
+                    $(clickButton.loadMoreClick).click()
                     setTimeout(clickLoad, 500)
                 } else {
                     callback();
                 }
             }
             clickLoad()
-        }, loadMoreVisible, loadMoreClick)
+        }, clickButton)
 
         .then(function () {
             scrapePage(nightmare, promptInfo)
@@ -245,7 +247,7 @@ prompt.get(credentials, function (err, result) {
     if (result.datesAreValid) {
         //login and begin nightmare
         console.log('Signing in...')
-        startNightmare(nightmare, result)
+        startNightmare(nightmare, result, clickButton)
     } else {
         console.log('\nOne or both of your dates did not folow the format "M/D/YY"')
         return;
