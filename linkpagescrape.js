@@ -20,11 +20,11 @@ var fs = require('fs')
 var prompt = require('prompt')
 
 //selectors for the nightmare thing to happen
-var clickButton = {
+var selectors = {
     usersName: '#userName',
     usersPassword: '#password',
     login: '.d2l-button',
-    select: '[name="predefinedDates"] option:nth-child(3)',
+    dropdown: '[name="predefinedDates"] option:nth-child(3)',
     dropdownItem: '[name="predefinedDates"]',
     startField: '#startDate',
     endField: '#endDate',
@@ -123,49 +123,49 @@ function sortData(links, promptInfo) {
 
 //Go to the page with all the links. Sign in with user's creds and use the url to navigate to page with broken links
 
-function startNightmare(nightmare, promptInfo, clickButton) {
+function startNightmare(nightmare, promptInfo, selectors) {
     nightmare
         .viewport(1000, 700)
         .goto('https://byui.brightspace.com/d2l/login?noredirect=true')
         //prompt the user for their own credentials
-        .type(clickButton.usersName, promptInfo.username)
-        .type(clickButton.usersPassword, promptInfo.password)
-        .click(clickButton.login)
+        .type(selectors.usersName, promptInfo.username)
+        .type(selectors.usersPassword, promptInfo.password)
+        .click(selectors.login)
         .wait(3000)
         .goto('https://byui.brightspace.com/d2l/brokenLinks/6606')
         //Wait for page to load
         .wait(1000)
 
-        .evaluate(function (clickButton) {
+        .evaluate(function (selectors) {
             //changes the value on the date select tag to the option we want
-            document.querySelector(clickButton.select).selected = 'selected';
+            document.querySelector(selectors.dropdown).selected = 'selected';
             //calls the onchange function for the select tag
-            document.querySelector(clickButton.dropdownItem).onchange();
+            document.querySelector(selectors.dropdownItem).onchange();
             //        D2L.O("__g1", 47)();
-        }, clickButton)
+        }, selectors)
         .wait(1000)
         //take the input from the user and type it into a custom date range.
-        .evaluate(function (startDate, endDate, clickButton) {
-            document.querySelector(clickButton.startField).value = startDate;
-            document.querySelector(clickButton.endField).value = endDate;
+        .evaluate(function (startDate, endDate, selectors) {
+            document.querySelector(selectors.startField).value = startDate;
+            document.querySelector(selectors.endField).value = endDate;
 
-        }, promptInfo.startDate.format('M/D/YYYY'), promptInfo.endDate.format('M/D/YYYY'), clickButton)
-        .type(clickButton.endField, ' ')
+        }, promptInfo.startDate.format('M/D/YYYY'), promptInfo.endDate.format('M/D/YYYY'), selectors)
+        .type(selectors.endField, ' ')
         .wait(2000)
         //click the apply button
-        .click(clickButton.apply)
+        .click(selectors.apply)
         //If the selector button called "Load more" exists, click it
-        .evaluate(function (clickButton, callback) {
+        .evaluate(function (selectors, callback) {
             function clickLoad() {
-                if ($(clickButton.loadMoreVisible).length) {
-                    $(clickButton.loadMoreClick).click()
+                if ($(selectors.loadMoreVisible).length) {
+                    $(selectors.loadMoreClick).click()
                     setTimeout(clickLoad, 500)
                 } else {
                     callback();
                 }
             }
             clickLoad()
-        }, clickButton)
+        }, selectors)
 
         .then(function () {
             scrapePage(nightmare, promptInfo)
@@ -247,7 +247,7 @@ prompt.get(credentials, function (err, result) {
     if (result.datesAreValid) {
         //login and begin nightmare
         console.log('Signing in...')
-        startNightmare(nightmare, result, clickButton)
+        startNightmare(nightmare, result, selectors)
     } else {
         console.log('\nOne or both of your dates did not folow the format "M/D/YY"')
         return;
