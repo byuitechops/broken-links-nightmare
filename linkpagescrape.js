@@ -2,25 +2,26 @@
 
 /*eslint-env node*/
 /*eslint no-console:0*/
+/*eslint no-undef:0*/
 /*global $, document, window*/
 
 //constants to change
-var beginSemester = '9/11/17'
+var beginSemester = '1/8/18',
 
 //required files and modules
-var Nightmare = require('nightmare');
-var nightmare = new Nightmare({
+ Nightmare = require('nightmare'),
+ nightmare = new Nightmare({
     show: true,
     alwaysOnTop: false
-});
-var moment = require('moment')
-var csvToTable = require('csv-to-table')
-var dsv = require('d3-dsv')
-var fs = require('fs')
-var prompt = require('prompt')
+}),
+moment = require('moment'), 
+csvToTable = require('csv-to-table'), 
+dsv = require('d3-dsv'), 
+fs = require('fs'), 
+prompt = require('prompt'),
 
-//selectors for the nightmare thing to happen
-var selectors = {
+//selectors for the nightmare thing to happen, 
+selectors = {
     usersName: '#userName',
     usersPassword: '#password',
     login: '.d2l-button',
@@ -32,10 +33,10 @@ var selectors = {
     loadMoreVisible: '.d2l-loadmore-pager:visible',
     loadMoreClick: '.d2l-loadmore-pager',
     rowGuts: 'table[is="d2l-table"] > tbody > tr'
-}
+},
 
 //prompt messages for the user
-var credentials = [
+ credentials = [
     {
         name: 'username',
         description: 'Please enter your username',
@@ -63,8 +64,8 @@ var credentials = [
 
 function sortData(links, promptInfo) {
     //filtering drawers
-    var startDateYear = promptInfo.startDate.get('year').toString()
-    var drawers = [{
+    var startDateYear = promptInfo.startDate.get('year').toString(),
+     drawers = [{
             name: "not-campus",
             search: /Campus/i,
             invertMatch: true
@@ -200,7 +201,7 @@ function scrapePage(nightmare, promptInfo) {
 
             return getItAll;
 
-        }, rowGuts)
+        }, selectors.rowGuts)
         //Save everything to a CSV
         .end()
         .then(function (getItAll) {
